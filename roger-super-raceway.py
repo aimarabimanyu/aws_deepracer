@@ -11,29 +11,45 @@ class Reward:
         abs_steering = abs(params['steering_angle'])
         speed = params['speed']
         progress = params['progress']
+        current_position = progress * 0.01 * track_length
+        distance_travelled = current_position - self.prevPosition
 
         # Give a very low reward by default
         reward = 1e-3
 
         # Rewards calculation
-        # 1. On-Track reward (Max = 15)
+        # 1. On-Track reward (Max = 25)
         if all_wheels_on_track and (0.5 * track_width - distance_from_center) >= 0.1:
+            reward += 25
+        else:
+            reward *= 0.5
+
+        # 2. Distance from center line reward (Max = 25)
+        if distance_from_center <= 0.1 * track_width:
+            reward += 25
+        elif distance_from_center <= 0.25 * track_width:
+            reward += 15
+        elif distance_from_center <= 0.5 * track_width:
+            reward += 7.5
+        else:
+            reward *= 0.5
+
+        # 3. Steering angle reward (Max = 15)
+        if abs_steering <= 15:
             reward += 15
         else:
             reward *= 0.5
 
-        # 2. Distance from center line reward (Max = 20)
-        reward += (1 - distance_from_center / (track_width / 2)) * 20
-
-        # 3. Steering angle reward (Max = 15)
-        reward += (1 - abs_steering / 15) * 15
-
         # 4. Speed reward (Max = 20)
-        reward += (speed / 5) * 20
+        if speed < 0.85:
+            reward *= 0.5
+        elif speed >= 0.85:
+            reward += (speed / 5) * 100
 
-        # 5. Progress reward (Max = 30)
-        reward += (progress / 100) * 30
+        # 5. Progress reward (Max = 15)
+        reward += (distance_travelled / track_length) * 15
 
+        self.prevPosition = current_position
         return float(reward)
 
 reward = Reward()
