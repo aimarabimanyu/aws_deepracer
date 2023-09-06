@@ -19,10 +19,10 @@ class Reward:
 
         # Rewards calculation
         # 1. On-Track reward (Max = 25)
-        if all_wheels_on_track and (0.5 * track_width - distance_from_center) >= 0.1:
+        if all_wheels_on_track and (0.5 * track_width - distance_from_center) >= 0.34:
             reward += 25
         else:
-            reward *= 0.5
+            reward *= 0.2
 
         # 2. Distance from center line reward (Max = 25)
         if distance_from_center <= 0.1 * track_width:
@@ -30,20 +30,18 @@ class Reward:
         elif distance_from_center <= 0.25 * track_width:
             reward += 15
         elif distance_from_center <= 0.5 * track_width:
-            reward += 7.5
+            reward += 5
         else:
-            reward *= 0.5
+            reward *= 0.4
 
         # 3. Steering angle reward (Max = 15)
-        if abs_steering <= 15:
-            reward += 15
-        else:
-            reward *= 0.5
+        if abs_steering > 15:
+            reward *= 0.8
 
         # 4. Speed reward (Max = 20)
-        if speed < 0.85:
+        if speed < 0.95:
             reward *= 0.5
-        elif speed >= 0.85:
+        elif speed >= 0.95:
             reward += (speed / 5) * 100
 
         # 5. Progress reward (Max = 15)
